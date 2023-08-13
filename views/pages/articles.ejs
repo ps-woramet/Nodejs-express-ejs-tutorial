@@ -1,0 +1,9 @@
+<%- include('../partials/head', {pageName: 'articlespage'})%>
+<%- include('../partials/nav')%>
+
+<h2>this is articles.ejs</h2>
+<% postsValue.forEach((post) => { %>
+        <h3><%= post.title %></h3>
+        <p><%= post.body %></p>
+<%})%>
+<%- include('../partials/footer')%>

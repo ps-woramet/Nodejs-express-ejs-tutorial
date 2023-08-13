@@ -1,0 +1,180 @@
+0. app.use = add middleware
+
+1. install package
+    terminal > npm init -y
+    terminal > npm i express ejs nodemon
+
+2. create script for running server.js with npm start
+
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon server.js"
+    },
+
+3. create folder
+    views > css > style.css
+
+    -style.css
+
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container{
+            background-color: rgb(226, 225, 225);
+            width: 100%;
+            height: 40px;
+        }
+
+        .container2{
+            display: flex;
+            align-items: center;
+            justify-content: right;
+            width: 80%;
+            height: 40px;
+            margin: 0 auto;
+        }
+
+        .container3{
+            display: flex;
+            gap: 20px;
+        }
+
+        .container3 a{
+            color: black;
+            text-decoration: none;
+        }
+
+        footer{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgb(226, 225, 225);
+            width: 100%;
+            height: 40px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+
+
+4. create folder ใช้สำหรับแสดงทุกหน้า
+    views > particals > head.ejs
+    views > particals > nav.ejs
+    views > particals > footer.ejs
+
+    -head.ejs 
+    //สามารถรับค่า pageName จาก index.ejs, articles.ejs มาตรวจสอบเงื่อนไขเพื่อแสดงค่าได้
+    //<link rel="stylesheet" href="/css/style.css"> ต้องทำการload assets ด้วย app.use('/css', express.static(path.join(__dirname, 'views', 'css'))); ที่ server.js ด้วย
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><%= typeof pageName != 'undifined' ? pageName : 'Mysite' %></title>
+            <link rel="stylesheet" href="/css/style.css">
+        </head>
+        <body>
+    
+    -nav.ejs
+
+        <div class="container">
+            <div class="container2">
+                <div class="container3">
+                    <a href="/">home</a>
+                    <a href="/articles">articles</a>
+                </div>
+            </div>
+        </div>
+    
+    -footer.ejs
+
+        <footer>copyright woramet</footer>
+        </body>
+        </html>
+
+5. views > pages > index.ejs, articles.ejs
+
+    -index.ejs ทำการแสดง ชื่อ โดยข้อมูลถูกส่งมาจาก server.js
+
+        <%- include('../partials/head', {pageName: 'homepage'})%>
+        <%- include('../partials/nav')%>
+
+        <h1>hello this is index.ejs <%= userValue.firstName%></h1>
+        <% if (userValue.admin) { %>
+            <p>let me tell you a secret: <b>I'm an admin</b></p>
+        <% } %>
+        <%- include('../partials/footer')%>
+
+    -articles.ejs ทำการนำข้อมูลมา loop และแสดงค่า
+
+        <%- include('../partials/head', {pageName: 'articlespage'})%>
+        <%- include('../partials/nav')%>
+
+        <h2>this is articles.ejs</h2>
+        <% postsValue.forEach((post) => { %>
+                <h3><%= post.title %></h3>
+                <p><%= post.body %></p>
+        <%})%>
+        <%- include('../partials/footer')%>
+
+6. create server, load assets, set ejs engine, middleware
+    nodejs-ejs-tutorial > server.js
+
+        const express = require('express')
+        const app = express()
+        const port = 3001
+        const path = require('path')
+
+        app.set('view engine', 'ejs')
+
+        const user = {
+            firstName: "woramet",
+            lastName: "tompudsa",
+            admin: true
+        }
+
+        const posts = [
+            {title: 'title 1', body: 'This is body 1'},
+            {title: 'title 2', body: 'This is body 2'},
+            {title: 'title 3', body: 'This is body 3'},
+            {title: 'title 4', body: 'This is body 4'},
+        ]
+        
+        //load assets
+        app.use('/css', express.static(path.join(__dirname, 'views', 'css')));
+
+        // middleware when request anytime
+        app.use((req, res, next) => {
+            console.log('Middleware 1');
+            next(); // ไปยัง middleware ถัดไป
+        });
+
+        // middleware when request /about
+        app.use('/articles', (req, res, next) => {
+            console.log('Middleware about 1')
+            next()
+        })
+
+        // middleware when request /about
+        app.use('/articles', (req, res, next) => {
+            console.log('Middleware about 2')
+            next()
+        })
+
+        // when request HTTP GET /
+        app.get('/', (req, res) => {
+            res.render('pages/index', {userValue: user, value2: 'HomePage'})
+        })
+
+        // when request HTTP GET /articles
+        app.get('/articles', (req, res) => {
+            res.render('pages/articles', {postsValue: posts, value2: 'ArticlesPage'})
+        })
+
+        app.listen(port, ()=>{
+            console.log(`add listening at port ${port}`)
+        })
+

@@ -1,0 +1,8 @@
+<%- include('../partials/head', {pageName: 'homepage'})%>
+<%- include('../partials/nav')%>
+
+<h1>hello this is index.ejs <%= userValue.firstName%></h1>
+<% if (userValue.admin) { %>
+    <p>let me tell you a secret: <b>I'm an admin</b></p>
+<% } %>
+<%- include('../partials/footer')%>
